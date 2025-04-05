@@ -1,6 +1,6 @@
 # 📺 youtube summarizer
 
-**YouTube Resumer** é uma ferramenta de linha de comando que extrai a transcrição de vídeos do YouTube e gera resumos automáticos com inteligência artificial, utilizando a API do **Google Gemini**. 
+**YouTube Summarizer** é uma ferramenta de linha de comando que extrai a transcrição de vídeos do YouTube e gera resumos automáticos com inteligência artificial, utilizando a API do **Google Gemini**. 
 
 ## 🚀 Funcionalidades
 
