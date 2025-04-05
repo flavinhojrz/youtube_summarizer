@@ -24,8 +24,8 @@
 ## 📚 Instalação
 
 ```bash
-git clone https://github.com/flavinhojrz/youtube_resumer.git
-cd youtube-resumer
+git clone https://github.com/flavinhojrz/youtube_summarizer.git
+cd youtube_summarizer
 pip install -r requirements.txt
 ```
 ## 🛠️ Como usar
