@@ -41,7 +41,7 @@ python3 main.py "https://www.youtube.com/watch?v=ABC123xyz"
 
 ## 📁 Estrutura do Projeto
 ```
-youtube_resumer/
+youtube_summarizer/
 ├── src/
 │   └── main.py              # Script principal do projeto
 ├── .gitignore               # Arquivos e pastas ignoradas pelo Git
