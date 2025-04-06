@@ -1,6 +1,6 @@
-# 📺 youtube resumer
+# 📺 youtube summarizer
 
-**YouTube Resumer** é uma ferramenta de linha de comando que extrai a transcrição de vídeos do YouTube e gera resumos automáticos com inteligência artificial, utilizando a API do **Google Gemini**. 
+**YouTube Summarizer** é uma ferramenta de linha de comando que extrai a transcrição de vídeos do YouTube e gera resumos automáticos com inteligência artificial, utilizando a API do **Google Gemini**. 
 
 ## 🚀 Funcionalidades
 
@@ -24,8 +24,8 @@
 ## 📚 Instalação
 
 ```bash
-git clone https://github.com/flavinhojrz/youtube_resumer.git
-cd youtube-resumer
+git clone https://github.com/flavinhojrz/youtube_summarizer.git
+cd youtube_summarizer
 pip install -r requirements.txt
 ```
 ## 🛠️ Como usar
@@ -41,7 +41,7 @@ python3 main.py "https://www.youtube.com/watch?v=ABC123xyz"
 
 ## 📁 Estrutura do Projeto
 ```
-youtube_resumer/
+youtube_summarizer/
 ├── src/
 │   └── main.py              # Script principal do projeto
 ├── .gitignore               # Arquivos e pastas ignoradas pelo Git
