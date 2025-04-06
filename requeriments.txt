@@ -4,3 +4,4 @@ pydantic
 fastapi
 python-dotenv
 urllib3
+uvicorn==0.27.0  
