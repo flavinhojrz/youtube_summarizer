@@ -1,5 +1,5 @@
 from youtube_transcript_api import YouTubeTranscriptApi
-from google import genai
+import google.generativeai as genai  # ✅ Correto
 from pydantic import BaseModel
 from fastapi import FastAPI, HTTPException 
 from fastapi.middleware.cors import CORSMiddleware
