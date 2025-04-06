@@ -1,5 +1,6 @@
-fastapi
-uvicorn
-python-dotenv
 youtube-transcript-api
 google-generativeai
+pydantic
+fastapi
+python-dotenv
+urllib3
