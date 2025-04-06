@@ -1,7 +1,5 @@
-fastapi==0.115.12
-uvicorn==0.34.0
-google-generativeai==1.9.0
-requests==2.32.3
-python-dotenv==1.1.0
-youtube-transcript-api==1.0.3
-yt-dlp==2025.3.31.214356.dev0
+fastapi
+uvicorn
+python-dotenv
+youtube-transcript-api
+google-generativeai
