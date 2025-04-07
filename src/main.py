@@ -1,28 +1,13 @@
 from youtube_transcript_api import YouTubeTranscriptApi
 from google import genai
-from pydantic import BaseModel
-from fastapi import FastAPI, HTTPException 
-from fastapi.middleware.cors import CORSMiddleware
 from google.genai import types
 from urllib.parse import urlparse, parse_qs
-from dotenv import load_dotenv
 import sys
+from dotenv import load_dotenv
 import os
 
 load_dotenv()
 google_api = os.getenv("API_KEY")
-app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-class VideoURL(BaseModel):
-    url: str
 
 def get_videoID(url):
     video_url = urlparse(url)
@@ -36,14 +21,11 @@ def get_videoID(url):
     return None
 
 def get_transcript(video_id):
-    try:
-        transcript = YouTubeTranscriptApi.get_transcript(video_id, languages=['pt', 'pt-BR', 'en'])
-        text = ' '.join([item['text'] for item in transcript])
-        return text
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro ao obter transcrição: {str(e)}")
+    transcript = YouTubeTranscriptApi.get_transcript(video_id, languages=['pt', 'pt-BR', 'en'])
+    text = ' '.join([item['text'] for item in transcript])
+    return text
 
-def generate(transcript, json=False):
+def generate(transcript):
     client = genai.Client(
         api_key=google_api,
     )
@@ -78,29 +60,14 @@ def generate(transcript, json=False):
     generate_content_config = types.GenerateContentConfig(
         response_mime_type="text/plain",
     )
-    response = ""
-    for chunk in client.models.generate_content_stream(
-        model=model,
-        contents=contents,
-        config=generate_content_config,
-    ):
-        response += chunk.text
 
-    if json:
-        return response
-    
-    with open("summary.txt", 'w', encoding='utf-8',) as arch:
-        arch.write(response)
-
-# @app.post("/summarize")
-# def get_summary(req: VideoURL):
-#     video_id = get_videoID(req.url)
-#     if not video_id:
-#         raise HTTPException(status_code=400, detail="URL do vídeo invalida")
-    
-#     transcript = get_transcript(video_id)
-#     summary = generate(transcript)
-#     return {"summary": summary}
+    with open("summary.txt", "w", encoding="utf-8") as f:
+        for chunk in client.models.generate_content_stream(
+            model=model,
+            contents=contents,
+            config=generate_content_config,
+        ):
+            f.write(chunk.text)
 
 def program():
     video_url = sys.argv[1]
@@ -110,4 +77,4 @@ def program():
     print("summary saved in 'summary.txt'")
 
 if __name__ == "__main__":
-   program();
+    program();
