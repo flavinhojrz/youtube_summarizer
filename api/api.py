@@ -1,9 +1,10 @@
 from fastapi import FastAPI, HTTPException
-from youtube_transcript_api import YouTubeTranscriptApi
 from google import genai
 from google.genai import types
 from urllib.parse import urlparse, parse_qs
 from dotenv import load_dotenv
+import subprocess
+import json
 import os
 
 load_dotenv()
@@ -16,14 +17,43 @@ def get_videoID(url: str):
     if "youtube.com" in video_url.netloc:
         query = parse_qs(video_url.query)
         return query.get("v", [None])[0]
-    elif "youtube.be" in video_url.netloc:
+    elif "youtu.be" in video_url.netloc:
         return video_url.path.lstrip("/")
     return None
 
 def get_transcript(video_id: str):
-    transcript = YouTubeTranscriptApi.get_transcript(video_id, languages=['pt', 'pt-BR', 'en'])
-    text = ' '.join([item['text'] for item in transcript])
-    return text
+    try:
+        result = subprocess.run(
+            [
+                "yt-dlp",
+                f"https://www.youtube.com/watch?v={video_id}",
+                "--write-auto-sub",
+                "--sub-lang", "pt,en",
+                "--skip-download",
+                "--sub-format", "json3",
+                "-o", f"{video_id}.%(ext)s"
+            ],
+            capture_output=True, text=True
+        )
+
+        if result.returncode != 0:
+            raise Exception(result.stderr)
+
+        transcript_file = f"{video_id}.en.json3"
+        if not os.path.exists(transcript_file):
+            transcript_file = f"{video_id}.pt.json3"
+        if not os.path.exists(transcript_file):
+            raise Exception("Legenda automática não encontrada.")
+
+        with open(transcript_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            transcript = ' '.join([e['segs'][0]['utf8'] for e in data['events'] if 'segs' in e])
+
+        os.remove(transcript_file)  
+        return transcript
+
+    except Exception as e:
+        raise Exception(f"Erro ao usar yt-dlp: {e}")
 
 def generate_summary(transcript: str):
     client = genai.Client(api_key=google_api)
