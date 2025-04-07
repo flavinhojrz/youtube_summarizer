@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from google.genai import types
 from urllib.parse import urlparse, parse_qs
 from dotenv import load_dotenv
+import sys
 import os
 
 load_dotenv()
@@ -42,7 +43,7 @@ def get_transcript(video_id):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao obter transcrição: {str(e)}")
 
-def generate(transcript):
+def generate(transcript, json=False):
     client = genai.Client(
         api_key=google_api,
     )
@@ -84,25 +85,29 @@ def generate(transcript):
         config=generate_content_config,
     ):
         response += chunk.text
-    
-    return response
 
-@app.post("/summarize")
-def get_summary(req: VideoURL):
-    video_id = get_videoID(req.url)
-    if not video_id:
-        raise HTTPException(status_code=400, detail="URL do vídeo invalida")
+    if json:
+        return response
     
-    transcript = get_transcript(video_id)
-    summary = generate(transcript)
-    return {"summary": summary}
+    with open("summary.txt", 'w', encoding='utf-8',) as arch:
+        arch.write(response)
 
-# def program():
-#     video_url = sys.argv[1]
-#     video_id = get_videoID(video_url)
+# @app.post("/summarize")
+# def get_summary(req: VideoURL):
+#     video_id = get_videoID(req.url)
+#     if not video_id:
+#         raise HTTPException(status_code=400, detail="URL do vídeo invalida")
+    
 #     transcript = get_transcript(video_id)
-#     generate(transcript)
-#     print("summary saved in 'summary.txt'")
+#     summary = generate(transcript)
+#     return {"summary": summary}
 
-# if __name__ == "__main__":
-#     program();
+def program():
+    video_url = sys.argv[1]
+    video_id = get_videoID(video_url)
+    transcript = get_transcript(video_id)
+    generate(transcript)
+    print("summary saved in 'summary.txt'")
+
+if __name__ == "__main__":
+   program();

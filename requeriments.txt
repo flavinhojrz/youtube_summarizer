@@ -1,7 +1,0 @@
-youtube-transcript-api
-google-generativeai>=0.3.0
-pydantic
-fastapi
-python-dotenv
-urllib3
-uvicorn==0.27.0  
