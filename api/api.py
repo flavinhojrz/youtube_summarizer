@@ -1,10 +1,11 @@
+import re
 from fastapi import FastAPI, HTTPException
+import requests
 from google import genai
 from google.genai import types
 from urllib.parse import urlparse, parse_qs
 from dotenv import load_dotenv
-import subprocess
-import json
+from yt_dlp import YoutubeDL
 import os
 
 load_dotenv()
@@ -21,39 +22,39 @@ def get_videoID(url: str):
         return video_url.path.lstrip("/")
     return None
 
+def clean_vtt(vtt_text: str):
+    lines = vtt_text.splitlines()
+    cleaned = []
+    for line in lines:
+        if line.strip() == "" or re.match(r"\d\d:\d\d", line) or line.startswith("WEBVTT"):
+            continue
+        cleaned.append(line.strip())
+    return " ".join(cleaned)
+
 def get_transcript(video_id: str):
+    url = f"https://www.youtube.com/watch?v={video_id}"
+    options = {
+        'skip_download': True,
+        'writeautomaticsub': True,
+        'subtitleslangs': ['pt'],
+        'subtitlesformat': 'vtt',
+        'quiet': True,
+        'outtmpl': '%(id)s.%(ext)s'
+    }
+
     try:
-        result = subprocess.run(
-            [
-                "yt-dlp",
-                f"https://www.youtube.com/watch?v={video_id}",
-                "--write-auto-sub",
-                "--sub-lang", "pt,en",
-                "--skip-download",
-                "--sub-format", "json3",
-                "-o", f"{video_id}.%(ext)s"
-            ],
-            capture_output=True, text=True
-        )
+        with YoutubeDL(options) as ydl:
+            info = ydl.extract_info(url, download=False)
+            if 'automatic_captions' not in info or 'pt' not in info['automatic_captions']:
+                raise RuntimeError("Legenda automática em português não disponível.")
 
-        if result.returncode != 0:
-            raise Exception(result.stderr)
-
-        transcript_file = f"{video_id}.en.json3"
-        if not os.path.exists(transcript_file):
-            transcript_file = f"{video_id}.pt.json3"
-        if not os.path.exists(transcript_file):
-            raise Exception("Legenda automática não encontrada.")
-
-        with open(transcript_file, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            transcript = ' '.join([e['segs'][0]['utf8'] for e in data['events'] if 'segs' in e])
-
-        os.remove(transcript_file)  
-        return transcript
-
+            subtitle_url = info['automatic_captions']['pt'][0]['url']
+            response = requests.get(subtitle_url)
+            if response.status_code != 200:
+                raise RuntimeError("Erro ao baixar legenda.")
+            return clean_vtt(response.text)
     except Exception as e:
-        raise Exception(f"Erro ao usar yt-dlp: {e}")
+        raise RuntimeError(f"Erro ao obter transcrição via yt-dlp: {e}")
 
 def generate_summary(transcript: str):
     client = genai.Client(api_key=google_api)
